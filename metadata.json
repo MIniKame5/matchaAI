@@ -1,0 +1,5 @@
+{
+  "name": "Matcha AI",
+  "description": "A clean, matcha-themed chat interface integrated with Firebase for history and Gemini 2.5 for intelligence.",
+  "requestFramePermissions": []
+}
