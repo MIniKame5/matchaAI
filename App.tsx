@@ -275,8 +275,10 @@ const App: React.FC = () => {
   // --- Chat Management Handlers ---
   const togglePinChat = async (chat: ChatSession, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!activeUserId) return;
+
     setActiveMenuChatId(null);
-    await updateChatSession(chat.id, { isPinned: !chat.isPinned });
+    await updateChatSession(activeUserId, chat.id, { isPinned: !chat.isPinned });
   };
 
   const openRenameModal = (chat: ChatSession, e: React.MouseEvent) => {
@@ -288,8 +290,8 @@ const App: React.FC = () => {
   };
 
   const submitRename = async () => {
-    if (editingChat && renameValue.trim()) {
-      await updateChatSession(editingChat.id, { title: renameValue.trim() });
+    if (editingChat && renameValue.trim() && activeUserId) {
+      await updateChatSession(activeUserId, editingChat.id, { title: renameValue.trim() });
       setIsRenameModalOpen(false);
       setEditingChat(null);
     }
@@ -304,8 +306,8 @@ const App: React.FC = () => {
   };
 
   const submitGroup = async () => {
-    if (editingChat) {
-      await updateChatSession(editingChat.id, { groupName: groupValue.trim() || null });
+    if (editingChat && activeUserId) {
+      await updateChatSession(activeUserId, editingChat.id, { groupName: groupValue.trim() || null });
       setIsGroupModalOpen(false);
       setEditingChat(null);
     }
@@ -319,11 +321,11 @@ const App: React.FC = () => {
   };
 
   const submitDelete = async () => {
-    if (chatToDelete) {
+    if (chatToDelete && activeUserId) {
       if (currentChatId === chatToDelete.id) {
         handleNewChat();
       }
-      await deleteChatSession(chatToDelete.id);
+      await deleteChatSession(activeUserId, chatToDelete.id);
       setIsDeleteModalOpen(false);
       setChatToDelete(null);
     }

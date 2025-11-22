@@ -2,7 +2,12 @@
 import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai";
 import { Message } from "../types";
 
-const apiKey = process.env.API_KEY;
+// --- API Key Config ---
+// GeminiのAPIキーをここに記述します (ai.env の代わり)
+const GEMINI_API_KEY = "AIzaSyAROjfHu5KtJZeUtvAfnq6ZCUdli1VucG8"; 
+
+// 環境変数または上記の定数を使用
+const apiKey = GEMINI_API_KEY !== "YOUR_GEMINI_API_KEY" ? GEMINI_API_KEY : process.env.API_KEY;
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 // Helper to clean text immediately upon receipt
@@ -38,7 +43,8 @@ export const sendMessageToGemini = async (
   newMessage: string
 ): Promise<GeminiResponse> => {
   if (!ai) {
-    throw new Error("Gemini API Key is missing");
+    console.error("Gemini API Key is missing. Please set it in services/geminiService.ts");
+    return { text: "APIキーが設定されていません。services/geminiService.tsを確認してください。" };
   }
 
   // Convert internal message format to Gemini format
@@ -59,6 +65,7 @@ export const sendMessageToGemini = async (
   });
 
   try {
+    // Clean the incoming text before processing
     const result = await chat.sendMessage({ message: newMessage });
     
     // Check for function calls (Tool use)
@@ -87,14 +94,13 @@ export const sendMessageToGemini = async (
           if (base64Image) {
             const imageUrl = `data:image/jpeg;base64,${base64Image}`;
             
-            // Let Gemini know the function was executed (optional, but usually we just return the result to UI here for speed)
-            // For this app, we'll construct the response directly.
+            // Return combined response
             return {
               text: `「${prompt}」の画像を生成しました！`,
               image: imageUrl
             };
           } else {
-            return { text: "画像の生成に失敗しました。" };
+            return { text: "画像を生成できませんでした。" };
           }
         } catch (imgError) {
           console.error("Imagen Error:", imgError);
@@ -104,6 +110,7 @@ export const sendMessageToGemini = async (
     }
 
     const rawText = result.text || "";
+    // Immediate cleaning
     return { text: cleanTextResponse(rawText) };
 
   } catch (error) {
